@@ -37,7 +37,11 @@ def argparse_ret():
     args = parser.parse_args()
     project_name = str(args.p).capitalize()
     project_path = str(args.path)
-    if args.path and project_path.startswith('/') is False:
+
+    if args.path and project_path.startswith('~/') is True and project_path.endswith('/') is True:
+        arg_path_with_name = str(project_path).replace('~', os.environ['HOME']) + project_name
+
+    elif args.path and project_path.startswith('/') is False:
         raise SystemExit('Please Input absolute path')
 
     elif args.path and project_path.endswith('/') is False:
