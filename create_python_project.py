@@ -43,10 +43,10 @@ def argparse_ret():
         arg_path_with_name = str(project_path).replace('~', os.environ['HOME']) + project_name
 
     elif args.path and project_path.startswith('/') is False:
-        raise SystemExit('Please Input absolute path')
+        raise SystemExit('Please Input absolute path for optional arguments')
 
     elif args.path and project_path.endswith('/') is False:
-        raise SystemExit('Please add "/" suffix at the end')
+        raise SystemExit('Please add "/" suffix at the end of optional arguments')
 
     elif args.path:
         arg_path_with_name = project_path + project_name
