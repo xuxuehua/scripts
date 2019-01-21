@@ -57,6 +57,11 @@ disable_selinux() {
     fi
 }
 
+disable_firewall() {
+    ${cmd_ops} systemctl stop firewalld 
+    ${cmd_ops} systemctl disable firewalld 
+}
+
 centos_bbr_verification() {
     MAIN_VER=$(uname -r | awk -F '.' '{print$1}')
     SUB_VER=$(uname -r | awk -F '.' '{print$2}')
@@ -83,12 +88,13 @@ centos_bbr_installation() {
                 echo "Cannot find /boot/grub2/grub.cfg, please check it."
                 exit 1
             fi
-            grub2-set-default 2
-            ${cmd_ops} "sed -i '/net.core.default_qdisc/d' /etc/sysctl.conf"
-            ${cmd_ops} "sed -i '/net.ipv4.tcp_congestion_control/d' /etc/sysctl.conf"
-            ${cmd_ops} "echo "net.core.default_qdisc = fq" >> /etc/sysctl.conf"
-            ${cmd_ops} "echo "net.ipv4.tcp_congestion_control = bbr" >> /etc/sysctl.conf"
-            ${cmd_ops} "sysctl -p >/dev/null 2>&1"
+            ${cmd_ops} grub2-set-default 0
+            ${cmd_ops} sed -i '/net.core.default_qdisc/d' /etc/sysctl.conf
+            ${cmd_ops} sed -i '/net.ipv4.tcp_congestion_control/d' /etc/sysctl.conf"
+            ${cmd_ops} echo "net.core.default_qdisc = fq" >> /etc/sysctl.conf
+            ${cmd_ops} echo "net.ipv4.tcp_congestion_control = bbr" >> /etc/sysctl.conf
+            ${cmd_ops} sysctl -p >/dev/null 2>&1
+            ${cmd_ops} init 6
         else
             echo "Currently it only support CentOS 7, but this one is: $version_id"
         fi
@@ -119,7 +125,7 @@ packages_installation_configuration() {
             for dep in ${centos_dep[@]}; do
                 installing_error_detection "yum -y install ${dep}"
             done
-            yum -y update
+            ${cmd_ops} yum -y update
             disable_selinux
             centos_bbr_verification
             # echo "Unknown OS dist: $os_dist_name"
@@ -134,6 +140,7 @@ main() {
     get_os_distribution
     verify_root_priv
     packages_installation_configuration
+    disable_firewall
 }
 
 main
