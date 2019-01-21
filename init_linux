@@ -23,7 +23,7 @@ command_exists() {
 #Check Root privileges, if not, operation with sudo or su prefix.
 verify_root_priv() {
     cmd_ops="sh -c"
-    if [ ! $UID -eq 0 ]; then
+    if [ ! $EUID -eq 0 ]; then
         if command_exists sudo; then
             cmd_ops='sudo -E sh -c'
         elif command_exists su; then
@@ -57,6 +57,51 @@ disable_selinux() {
     fi
 }
 
+centos_bbr_verification() {
+    MAIN_VER=$(uname -r | awk -F '.' '{print$1}')
+    SUB_VER=$(uname -r | awk -F '.' '{print$2}')
+    SYSCTL_CONGESTION=$(sysctl net.ipv4.tcp_congestion_control | awk -F'=' '{print $2}')
+    SYSCTL_QDISC=$(sysctl net.core.default_qdisc | awk -F '=' '{print $2}')
+    LSMOD_RET=$(lsmod | grep bbr | awk '{print $1}')
+
+    if (( $MAIN_VER >= 4 )) && (( $SUB_VER >= 9 )) && [ "$SYSCTL_CONGESTION" = "bbr" ] && [ "$SYSCTL_QDISC" = "fq" ] && [ "$LSMOD_RET" = "tcp_bbr"]; then
+        echo "BBR have been verified."
+    else
+        centos_bbr_installation
+    fi
+}
+
+centos_bbr_installation() {
+    #Get centos version number
+    if [ -r /etc/os-release ]; then
+        version_id="$(. /etc/os-release && echo "$VERSION_ID")"
+
+        if [ "$version_id" = "7" ]; then
+            ${cmd_ops} "rpm -Uvh http://www.elrepo.org/elrepo-release-7.0-3.el7.elrepo.noarch.rpm"
+            ${cmd_ops} "yum --enablerepo=elrepo-kernel -y install kernel-ml kernel-ml-devel"
+            if [ ! -f "/boot/grub2/grub.cfg" ]; then
+                echo "Cannot find /boot/grub2/grub.cfg, please check it."
+                exit 1
+            fi
+            grub2-set-default 2
+            ${cmd_ops} "sed -i '/net.core.default_qdisc/d' /etc/sysctl.conf"
+            ${cmd_ops} "sed -i '/net.ipv4.tcp_congestion_control/d' /etc/sysctl.conf"
+            ${cmd_ops} "echo "net.core.default_qdisc = fq" >> /etc/sysctl.conf"
+            ${cmd_ops} "echo "net.ipv4.tcp_congestion_control = bbr" >> /etc/sysctl.conf"
+            ${cmd_ops} "sysctl -p >/dev/null 2>&1"
+        else
+            echo "Currently it only support CentOS 7, but this one is: $version_id"
+        fi
+    else
+        echo "Can not identify current version: $VERSION_ID"
+    fi
+
+    if (( $s <= 20 )); then
+        echo "$s lesser equal 20"
+    fi
+    
+}
+
 packages_installation_configuration() {
     case "$os_dist_name" in
         ubuntu)
@@ -81,6 +126,7 @@ packages_installation_configuration() {
             done
             yum -y update
             disable_selinux
+            centos_bbr_verification
             # echo "Unknown OS dist: $os_dist_name"
         ;;
     esac
