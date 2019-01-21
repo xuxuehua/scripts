@@ -90,7 +90,7 @@ centos_bbr_installation() {
             fi
             ${cmd_ops} grub2-set-default 0
             ${cmd_ops} sed -i '/net.core.default_qdisc/d' /etc/sysctl.conf
-            ${cmd_ops} sed -i '/net.ipv4.tcp_congestion_control/d' /etc/sysctl.conf"
+            ${cmd_ops} sed -i '/net.ipv4.tcp_congestion_control/d' /etc/sysctl.conf
             ${cmd_ops} echo "net.core.default_qdisc = fq" >> /etc/sysctl.conf
             ${cmd_ops} echo "net.ipv4.tcp_congestion_control = bbr" >> /etc/sysctl.conf
             ${cmd_ops} sysctl -p >/dev/null 2>&1
@@ -128,7 +128,7 @@ packages_installation_configuration() {
             ${cmd_ops} yum -y update
             disable_selinux
             centos_bbr_verification
-            # echo "Unknown OS dist: $os_dist_name
+            # echo "Unknown OS dist: $os_dist_name"
         ;;
     esac
 }
