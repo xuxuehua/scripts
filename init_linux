@@ -95,11 +95,6 @@ centos_bbr_installation() {
     else
         echo "Can not identify current version: $VERSION_ID"
     fi
-
-    if (( $s <= 20 )); then
-        echo "$s lesser equal 20"
-    fi
-    
 }
 
 packages_installation_configuration() {
