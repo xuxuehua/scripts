@@ -88,6 +88,7 @@ centos_bbr_installation() {
                 echo "Cannot find /boot/grub2/grub.cfg, please check it."
                 exit 1
             fi
+            
             ${cmd_ops} grub2-set-default 0
             ${cmd_ops} sed -i '/net.core.default_qdisc/d' /etc/sysctl.conf
             ${cmd_ops} sed -i '/net.ipv4.tcp_congestion_control/d' /etc/sysctl.conf
