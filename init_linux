@@ -1,0 +1,99 @@
+#!/bin/bash
+
+#Exit this script if return a non-zero status.
+set -e
+
+
+
+#Get os distribution
+get_os_distribution() {
+    os_dist_name=""
+    #read os-release info
+    if [ -r /etc/os-release ]; then
+        os_dist_name="$(. /etc/os-release && echo "$ID")"
+    fi
+    echo "Current OS dist Name: $os_dist_name"
+}
+
+#Command verification in Linux
+command_exists() {
+    command -v "$@" > /dev/null 2>&1
+}
+
+#Check Root privileges, if not, operation with sudo or su prefix.
+verify_root_priv() {
+    cmd_ops="sh -c"
+    if [ ! $UID -eq 0 ]; then
+        if command_exists sudo; then
+            cmd_ops='sudo -E sh -c'
+        elif command_exists su; then
+            cmd_ops='su -c'
+        else
+            echo "Please run this script by root privileges."
+            exit 1
+        fi
+    fi
+}
+
+
+installing_error_detection() {
+    local command=$1
+    local dependence=`echo "${command}" | awk '{print $NF}'`
+    ${cmd_ops} "${command}"
+    if [ $? != 0 ]; then
+        echo "Failed to install: ${dependence}"
+        exit 1 
+    fi
+}
+
+disable_selinux() {
+    if [ -s /etc/selinux/config ] && grep 'SELINUX=enforcing' /etc/selinux/config; then
+        sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
+        setenforce 0
+    fi
+    if [ -s /etc/selinux/config ] && grep 'SELINUX=permissive' /etc/selinux/config; then
+        sed -i 's/SELINUX=permissive/SELINUX=disabled/g' /etc/selinux/config
+        setenforce 0 
+    fi
+}
+
+packages_installation_configuration() {
+    case "$os_dist_name" in
+        ubuntu)
+            ubuntu_dep=(build-essential libpcre* libz*)
+            for dep in ${ubuntu_dep[@]}; do
+                installing_error_detection "apt -y install ${dep}"
+            done
+            apt update -y -qq > /dev/null
+        ;;
+        debian)
+            debian_dep=()
+            for dep in ${debian_dep[@]}; do
+                installing_error_detection "apt -y install ${dep}"
+            done
+            apt update -y -qq > /dev/null
+        ;;
+        centos)
+            #Packages dendences
+            centos_dep=(openssl openssl-devel gettext gcc autoconf libtool automake make asciidoc xmlto udns-devel libev-devel pcre pcre-devel links elinks git net-tools gnutls-devel libev-devel tcp_wrappers-devel pam-devel lz4-devel libseccomp-devel readline-devel libnl3-devel krb5-devel liboath-devel radcli-devel protobuf-c-devel libtalloc-devel pcllib-devel autogen-libopts-devel autogen protobuf-c gperf lockfile-progs nuttcp lcov uid_wrapper pam_wrapper nss_wrapper socket_wrapper gssntlmssp pam_oath screen vim iperf htop zip unzip wget c-ares c-ares-devel bind-utils lsof nc telnet sysstat tree httpd tor fail2ban epel-release)
+            for dep in ${centos_dep[@]}; do
+                installing_error_detection "yum -y install ${dep}"
+            done
+            yum -y update
+            disable_selinux
+            # echo "Unknown OS dist: $os_dist_name"
+        ;;
+    esac
+}
+
+
+
+
+main() {
+    get_os_distribution
+    verify_root_priv
+    packages_installation_configuration
+}
+
+main
+
