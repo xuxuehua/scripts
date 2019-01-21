@@ -128,7 +128,7 @@ packages_installation_configuration() {
             ${cmd_ops} yum -y update
             disable_selinux
             centos_bbr_verification
-            # echo "Unknown OS dist: $os_dist_name"
+            # echo "Unknown OS dist: $os_dist_name
         ;;
     esac
 }
