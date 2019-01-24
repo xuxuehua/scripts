@@ -138,7 +138,7 @@ packages_installation_configuration() {
     esac
 }
 
-disable_history {
+disable_history() {
     ${cmd_ops} 'history -c && rm -rf ~/.bash_history && unset HISTFILE && HISTSIZE=0 && >/var/log/wtmp &&  >/var/log/btmp'
     ${cmd_ops} 'echo "unset HISTFILE" >> ~/.bashrc  '
     ${cmd_ops} 'echo "HISTSIZE=0" >> ~/.bashrc'
