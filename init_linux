@@ -82,20 +82,24 @@ centos_bbr_installation() {
         version_id="$(. /etc/os-release && echo "$VERSION_ID")"
 
         if [ "$version_id" = "7" ]; then
-            ${cmd_ops} "rpm -Uvh http://www.elrepo.org/elrepo-release-7.0-3.el7.elrepo.noarch.rpm"
-            ${cmd_ops} "yum --enablerepo=elrepo-kernel -y install kernel-ml kernel-ml-devel"
+            ${cmd_ops} 'rpm -qa | grep elrepo'
+            if [ $? -ne 0 ]; then
+                ${cmd_ops} "yum -y install http://www.elrepo.org/elrepo-release-7.0-3.el7.elrepo.noarch.rpm"
+                ${cmd_ops} "yum --enablerepo=elrepo-kernel -y install kernel-ml kernel-ml-devel"
+            fi
+            
             if [ ! -f "/boot/grub2/grub.cfg" ]; then
                 echo "Cannot find /boot/grub2/grub.cfg, please check it."
                 exit 1
             fi
-            
-            ${cmd_ops} grub2-set-default 0
-            ${cmd_ops} sed -i '/net.core.default_qdisc/d' /etc/sysctl.conf
-            ${cmd_ops} sed -i '/net.ipv4.tcp_congestion_control/d' /etc/sysctl.conf
-            ${cmd_ops} echo "net.core.default_qdisc = fq" >> /etc/sysctl.conf
-            ${cmd_ops} echo "net.ipv4.tcp_congestion_control = bbr" >> /etc/sysctl.conf
-            ${cmd_ops} sysctl -p >/dev/null 2>&1
-            ${cmd_ops} init 6
+
+            ${cmd_ops} 'grub2-set-default 0'
+            ${cmd_ops} "sed -i '/net.core.default_qdisc/d' /etc/sysctl.conf"
+            ${cmd_ops} "sed -i '/net.ipv4.tcp_congestion_control/d' /etc/sysctl.conf"
+            ${cmd_ops} 'echo "net.core.default_qdisc = fq" >> /etc/sysctl.conf'
+            ${cmd_ops} 'echo "net.ipv4.tcp_congestion_control = bbr" >> /etc/sysctl.conf'
+            ${cmd_ops} 'sysctl -p >/dev/null 2>&1'
+            ${cmd_ops} 'init 6'
         else
             echo "Currently it only support CentOS 7, but this one is: $version_id"
         fi
@@ -126,7 +130,7 @@ packages_installation_configuration() {
             for dep in ${centos_dep[@]}; do
                 installing_error_detection "yum -y install ${dep}"
             done
-            ${cmd_ops} yum -y update
+            ${cmd_ops} 'yum -y update'
             disable_selinux
             centos_bbr_verification
             # echo "Unknown OS dist: $os_dist_name"
@@ -134,6 +138,14 @@ packages_installation_configuration() {
     esac
 }
 
+disable_history {
+    ${cmd_ops} 'history -c && rm -rf ~/.bash_history && unset HISTFILE && HISTSIZE=0 && >/var/log/wtmp &&  >/var/log/btmp'
+    ${cmd_ops} 'echo "unset HISTFILE" >> ~/.bashrc  '
+    ${cmd_ops} 'echo "HISTSIZE=0" >> ~/.bashrc'
+    ${cmd_ops} 'echo "set +o history" >> ~/.bashrc' 
+    ${cmd_ops} 'echo ">/var/log/wtmp" >> ~/.bashrc'
+    ${cmd_ops} 'echo ">/var/log/btmp" >> ~/.bashrc'
+}
 
 
 
@@ -142,6 +154,7 @@ main() {
     verify_root_priv
     packages_installation_configuration
     disable_firewall
+    disable_history
 }
 
 main
