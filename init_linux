@@ -111,14 +111,14 @@ centos_bbr_installation() {
 packages_installation_configuration() {
     case "$os_dist_name" in
         ubuntu)
-            ubuntu_dep=(build-essential libpcre* libz*)
+            ubuntu_dep=(build-essential libpcre* libz* cmake)
             for dep in ${ubuntu_dep[@]}; do
                 installing_error_detection "apt -y install ${dep}"
             done
             apt update -y -qq > /dev/null
         ;;
         debian)
-            debian_dep=()
+            debian_dep=(build-essential libpcre* libz* cmake)
             for dep in ${debian_dep[@]}; do
                 installing_error_detection "apt -y install ${dep}"
             done
