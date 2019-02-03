@@ -69,7 +69,7 @@ centos_bbr_verification() {
     SYSCTL_QDISC=$(sysctl net.core.default_qdisc | awk -F '=' '{print $2}')
     LSMOD_RET=$(lsmod | grep bbr | awk '{print $1}')
 
-    if (( $MAIN_VER >= 4 )) && (( $SUB_VER >= 9 )) && [ "$SYSCTL_CONGESTION" = "bbr" ] && [ "$SYSCTL_QDISC" = "fq" ] && [ "$LSMOD_RET" = "tcp_bbr"]; then
+    if (( $MAIN_VER >= 4 )) && (( $SUB_VER >= 9 )) && [ ${SYSCTL_CONGESTION} == "bbr" ] && [ ${SYSCTL_QDISC} == "fq" ] && [ ${LSMOD_RET} == "tcp_bbr" ] ; then
         echo "BBR have been verified."
     else
         centos_bbr_installation
