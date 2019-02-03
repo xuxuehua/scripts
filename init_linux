@@ -82,11 +82,8 @@ centos_bbr_installation() {
         version_id="$(. /etc/os-release && echo "$VERSION_ID")"
 
         if [ "$version_id" = "7" ]; then
-            ${cmd_ops} 'rpm -qa | grep elrepo'
-            if [ $? -ne 0 ]; then
-                ${cmd_ops} "yum -y install http://www.elrepo.org/elrepo-release-7.0-3.el7.elrepo.noarch.rpm"
-                ${cmd_ops} "yum --enablerepo=elrepo-kernel -y install kernel-ml kernel-ml-devel"
-            fi
+            ${cmd_ops} "yum -y install http://www.elrepo.org/elrepo-release-7.0-3.el7.elrepo.noarch.rpm"
+            ${cmd_ops} "yum --enablerepo=elrepo-kernel -y install kernel-ml kernel-ml-devel"
             
             if [ ! -f "/boot/grub2/grub.cfg" ]; then
                 echo "Cannot find /boot/grub2/grub.cfg, please check it."
@@ -118,7 +115,7 @@ packages_installation_configuration() {
             apt update -y -qq > /dev/null
         ;;
         debian)
-            debian_dep=(build-essential libpcre3 cmake bison)
+            debian_dep=(build-essential libpcre3 cmake bison libboost-all-dev)
             for dep in ${debian_dep[@]}; do
                 installing_error_detection "apt -y install ${dep}"
             done
