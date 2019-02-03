@@ -111,14 +111,14 @@ centos_bbr_installation() {
 packages_installation_configuration() {
     case "$os_dist_name" in
         ubuntu)
-            ubuntu_dep=(build-essential libpcre* libz* cmake)
+            ubuntu_dep=(build-essential libpcre3 cmake)
             for dep in ${ubuntu_dep[@]}; do
                 installing_error_detection "apt -y install ${dep}"
             done
             apt update -y -qq > /dev/null
         ;;
         debian)
-            debian_dep=(build-essential libpcre* libz* cmake)
+            debian_dep=(build-essential libpcre3 cmake bison)
             for dep in ${debian_dep[@]}; do
                 installing_error_detection "apt -y install ${dep}"
             done
@@ -139,7 +139,7 @@ packages_installation_configuration() {
 }
 
 disable_history() {
-    ${cmd_ops} 'history -c && rm -rf ~/.bash_history && unset HISTFILE && HISTSIZE=0 && >/var/log/wtmp &&  >/var/log/btmp'
+    ${cmd_ops} 'rm -rf ~/.bash_history && unset HISTFILE && HISTSIZE=0 && >/var/log/wtmp &&  >/var/log/btmp'
     ${cmd_ops} 'echo "unset HISTFILE" >> ~/.bashrc  '
     ${cmd_ops} 'echo "HISTSIZE=0" >> ~/.bashrc'
     ${cmd_ops} 'echo "set +o history" >> ~/.bashrc' 
