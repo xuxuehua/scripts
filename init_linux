@@ -62,7 +62,7 @@ disable_firewall() {
     ${cmd_ops} systemctl disable firewalld 
 }
 
-centos_bbr_verification() {
+bbr_verification() {
     MAIN_VER=$(uname -r | awk -F '.' '{print$1}')
     SUB_VER=$(uname -r | awk -F '.' '{print$2}')
     SYSCTL_CONGESTION=$(sysctl net.ipv4.tcp_congestion_control | awk -F'=' '{print $2}')
@@ -72,8 +72,28 @@ centos_bbr_verification() {
     if (( $MAIN_VER >= 4 )) && (( $SUB_VER >= 9 )) && [ ${SYSCTL_CONGESTION} == "bbr" ] && [ ${SYSCTL_QDISC} == "fq" ] && [ ${LSMOD_RET} == "tcp_bbr" ] ; then
         echo "BBR have been verified."
     else
-        centos_bbr_installation
+        case "$ios_dist_name" in
+            centos)
+                centos_bbr_installation
+            ;;
+            ubuntu)
+                ubuntu_bbr_installation
+            ;;
+            *)
+                echo "Unsupported OS version."
+            ;;
+        esac
+        
     fi
+}
+ubuntu_bbr_installation() {
+    ${cmd_ops} "modprobe tcp_bbr"
+    ${cmd_ops} 'echo "tcp_bbr" | sudo tee --append /etc/modules-load.d/modules.conf'
+    ${cmd_ops} 'echo "net.core.default_qdisc=fq" | sudo tee --append /etc/sysctl.conf'
+    ${cmd_ops} 'echo "net.ipv4.tcp_congestion_control=bbr" | sudo tee --append /etc/sysctl.conf'
+    ${cmd_ops} "sysctl -p"
+    ${cmd_ops} "sysctl net.ipv4.tcp_available_congestion_control"
+    ${cmd_ops} "sysctl net.ipv4.tcp_congestion_control"
 }
 
 centos_bbr_installation() {
@@ -113,6 +133,7 @@ packages_installation_configuration() {
                 installing_error_detection "apt -y install ${dep}"
             done
             apt update -y -qq > /dev/null
+            bbr_verification
         ;;
         debian)
             debian_dep=(build-essential libpcre3 cmake bison libboost-all-dev)
@@ -130,7 +151,7 @@ packages_installation_configuration() {
             ${cmd_ops} 'yum -y update'
             ${cmd_ops} 'yum -y groupinstall Development Tools'
             disable_selinux
-            centos_bbr_verification
+            bbr_verification
             # echo "Unknown OS dist: $os_dist_name"
         ;;
     esac
