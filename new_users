@@ -13,6 +13,7 @@ secure_sshd() {
     sed -i 's/^#Port 22/Port 54321/g' /etc/ssh/sshd_config
     sed -i 's/^#PermitRootLogin\s*yes$/PermitRootLogin no/g' /etc/ssh/sshd_config
     sed -i 's/^#PubkeyAuthentication\s*yes$/PubkeyAuthentication yes/g' /etc/ssh/sshd_config
+    sed -i 's/^#PermitEmptyPasswords\s*no$/PermitEmptyPasswords no/g' /etc/ssh/sshd_config
     systemctl restart sshd
 }
 

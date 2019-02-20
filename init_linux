@@ -58,8 +58,20 @@ disable_selinux() {
 }
 
 disable_firewall() {
-    ${cmd_ops} systemctl stop firewalld 
-    ${cmd_ops} systemctl disable firewalld 
+    case "$os_dist_name" in
+        centos)
+            ${cmd_ops} systemctl stop firewalld 
+            ${cmd_ops} systemctl disable firewalld 
+        ;;
+        ubuntu)
+            ${cmd_ops} systemctl stop ufw -l
+            ${cmd_ops} systemctl disable ufw -l 
+        ;;
+        *)
+            echo "default"
+        ;;
+    esac
+    
 }
 
 bbr_verification() {
@@ -72,7 +84,7 @@ bbr_verification() {
     if (( $MAIN_VER >= 4 )) && (( $SUB_VER >= 9 )) && [ ${SYSCTL_CONGESTION} == "bbr" ] && [ ${SYSCTL_QDISC} == "fq" ] && [ ${LSMOD_RET} == "tcp_bbr" ] ; then
         echo "BBR have been verified."
     else
-        case "$ios_dist_name" in
+        case "$os_dist_name" in
             centos)
                 centos_bbr_installation
             ;;
@@ -83,8 +95,8 @@ bbr_verification() {
                 echo "Unsupported OS version."
             ;;
         esac
-        
     fi
+
 }
 ubuntu_bbr_installation() {
     ${cmd_ops} "modprobe tcp_bbr"
@@ -144,7 +156,7 @@ packages_installation_configuration() {
         ;;
         centos)
             #Packages dendences
-            centos_dep=(openssl openssl-devel gettext gcc autoconf libtool automake make asciidoc xmlto udns-devel libev-devel pcre pcre-devel links elinks git net-tools gnutls-devel libev-devel tcp_wrappers-devel pam-devel lz4-devel libseccomp-devel readline-devel libnl3-devel krb5-devel liboath-devel radcli-devel protobuf-c-devel libtalloc-devel pcllib-devel autogen-libopts-devel autogen protobuf-c gperf lockfile-progs nuttcp lcov uid_wrapper pam_wrapper nss_wrapper socket_wrapper gssntlmssp pam_oath screen vim iperf htop zip unzip wget c-ares c-ares-devel bind-utils lsof nc telnet sysstat tree httpd tor fail2ban epel-release)
+            centos_dep=(epel-release openssl openssl-devel gettext gcc autoconf libtool automake make asciidoc xmlto udns-devel libev-devel pcre pcre-devel links elinks git net-tools gnutls-devel libev-devel tcp_wrappers-devel pam-devel lz4-devel libseccomp-devel readline-devel libnl3-devel krb5-devel liboath-devel radcli-devel protobuf-c-devel libtalloc-devel pcllib-devel autogen-libopts-devel autogen protobuf-c gperf lockfile-progs nuttcp lcov uid_wrapper pam_wrapper nss_wrapper socket_wrapper gssntlmssp pam_oath screen vim iperf htop zip unzip wget c-ares c-ares-devel bind-utils lsof nc telnet sysstat tree httpd tor fail2ban)
             for dep in ${centos_dep[@]}; do
                 installing_error_detection "yum -y install ${dep}"
             done
