@@ -154,7 +154,7 @@ packages_installation_configuration() {
             apt update -y -qq > /dev/null
         ;;
         centos)
-            #Packages dendences
+            #Packages dependences
             centos_dep=(epel-release openssl openssl-devel gettext gcc autoconf libtool automake make asciidoc xmlto udns-devel libev-devel pcre pcre-devel links elinks git net-tools gnutls-devel libev-devel tcp_wrappers-devel pam-devel lz4-devel libseccomp-devel readline-devel libnl3-devel krb5-devel liboath-devel radcli-devel protobuf-c-devel libtalloc-devel pcllib-devel autogen-libopts-devel autogen protobuf-c gperf lockfile-progs nuttcp lcov uid_wrapper pam_wrapper nss_wrapper socket_wrapper gssntlmssp pam_oath screen vim iperf htop zip unzip wget c-ares c-ares-devel bind-utils lsof nc telnet sysstat tree httpd tor fail2ban)
             for dep in ${centos_dep[@]}; do
                 installing_error_detection "yum -y install ${dep}"
