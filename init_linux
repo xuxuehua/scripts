@@ -139,7 +139,7 @@ centos_bbr_installation() {
 packages_installation_configuration() {
     case "$os_dist_name" in
         ubuntu)
-            ubuntu_dep=(build-essential libpcre3 cmake)
+            ubuntu_dep=(build-essential libpcre3 cmake net-tools)
             for dep in ${ubuntu_dep[@]}; do
                 installing_error_detection "apt -y install ${dep}"
             done
@@ -147,7 +147,7 @@ packages_installation_configuration() {
             bbr_verification
         ;;
         debian)
-            debian_dep=(build-essential libpcre3 cmake bison libboost-all-dev)
+            debian_dep=(build-essential libpcre3 cmake bison libboost-all-dev net-tools)
             for dep in ${debian_dep[@]}; do
                 installing_error_detection "apt -y install ${dep}"
             done
