@@ -220,7 +220,7 @@ main() {
     verify_root_priv
     packages_installation_configuration
     disable_firewall
-    disable_history
+    # disable_history
     verify_root_priv_for_new_user
     secure_sshd
     add_new_user
