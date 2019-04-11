@@ -114,8 +114,12 @@ centos_bbr_installation() {
         version_id="$(. /etc/os-release && echo "$VERSION_ID")"
 
         if [ "$version_id" = "7" ]; then
-            ${cmd_ops} "yum -y install http://www.elrepo.org/elrepo-release-7.0-3.el7.elrepo.noarch.rpm"
-            ${cmd_ops} "yum --enablerepo=elrepo-kernel -y install kernel-ml kernel-ml-devel"
+
+            if [ ! -f /etc/yum.repos.d/elrepo.repo ]; then
+                ${cmd_ops} "rpm --import https://www.elrepo.org/RPM-GPG-KEY-elrepo.org"
+                ${cmd_ops} "yum -y install http://www.elrepo.org/elrepo-release-7.0-3.el7.elrepo.noarch.rpm"
+                ${cmd_ops} "yum --enablerepo=elrepo-kernel -y install kernel-ml kernel-ml-devel"
+            fi
             
             if [ ! -f "/boot/grub2/grub.cfg" ]; then
                 echo "Cannot find /boot/grub2/grub.cfg, please check it."
@@ -155,7 +159,7 @@ packages_installation_configuration() {
         ;;
         centos)
             #Packages dependences
-            centos_dep=(epel-release openssl openssl-devel gettext gcc autoconf libtool automake make asciidoc xmlto udns-devel libev-devel pcre pcre-devel links elinks git net-tools gnutls-devel libev-devel tcp_wrappers-devel pam-devel lz4-devel libseccomp-devel readline-devel libnl3-devel krb5-devel liboath-devel radcli-devel protobuf-c-devel libtalloc-devel pcllib-devel autogen-libopts-devel autogen protobuf-c gperf lockfile-progs nuttcp lcov uid_wrapper pam_wrapper nss_wrapper socket_wrapper gssntlmssp pam_oath screen vim iperf htop zip unzip wget c-ares c-ares-devel bind-utils lsof nc telnet sysstat tree httpd tor fail2ban)
+            centos_dep=(epel-release grub2 kernel.x86_64 openssl openssl-devel gettext gcc autoconf libtool automake make asciidoc xmlto udns-devel libev-devel pcre pcre-devel links elinks git net-tools gnutls-devel libev-devel tcp_wrappers-devel pam-devel lz4-devel libseccomp-devel readline-devel libnl3-devel krb5-devel liboath-devel radcli-devel protobuf-c-devel libtalloc-devel pcllib-devel autogen-libopts-devel autogen protobuf-c gperf lockfile-progs nuttcp lcov uid_wrapper pam_wrapper nss_wrapper socket_wrapper gssntlmssp pam_oath screen vim iperf htop zip unzip wget c-ares c-ares-devel bind-utils lsof nc telnet sysstat tree httpd tor fail2ban)
             for dep in ${centos_dep[@]}; do
                 installing_error_detection "yum -y install ${dep}"
             done
