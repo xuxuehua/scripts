@@ -9,7 +9,7 @@ class Project(object):
 
     def __init__(self, *args):
         self.project_path_with_name = str(args[0])
-        self.current_dir = os.path.dirname(__file__)
+        self.current_dir = os.path.abspath('./') + '/'
         self.sub_folder_name = os.path.basename(self.project_path_with_name).lower()
 
     def create_dirs(self):
@@ -31,7 +31,7 @@ class Project(object):
 
 
 def argparse_ret():
-    current_dir = os.path.dirname(__file__)
+    current_dir = os.path.abspath('./') + '/' 
     parser = argparse.ArgumentParser(description='This is used to initial python project directory & files.')
     parser.add_argument('p', help="Project Name")
     parser.add_argument('-p', '--path', help="Absolute path")
