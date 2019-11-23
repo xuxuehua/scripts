@@ -1,0 +1,74 @@
+
+#!/bin/bash
+
+#Exit this script if return a non-zero status.
+set -e
+
+get_os_distribution() {
+    os_dist_name=""
+    #read os-release info
+    if [ -r /etc/os-release ]; then
+        os_dist_name="$(. /etc/os-release && echo "$ID")"
+    fi
+    echo "Current OS dist Name: $os_dist_name"
+}
+
+
+verify_root_priv_for_new_user() {
+    if [ ! $EUID -eq 0 ]; then
+        echo "Please run this script by root privileges."
+        exit 1
+    fi
+}
+
+secure_sshd() {
+    sed -i 's/^#Port.*/Port 54321/g' /etc/ssh/sshd_config
+    sed -i 's/^#PermitRootLogin.*/PermitRootLogin no/g' /etc/ssh/sshd_config
+    sed -i 's/^#PubkeyAuthentication.*/PubkeyAuthentication yes/g' /etc/ssh/sshd_config
+    sed -i 's/^#PermitEmptyPasswords.*/PermitEmptyPasswords no/g' /etc/ssh/sshd_config
+    sed -i 's/^#PermitEmptyPasswords.*/PermitEmptyPasswords no/g' /etc/ssh/sshd_config
+    sed -i 's/^#TCPKeepAlive.*/TCPKeepAlive yes/g' /etc/ssh/sshd_config
+    sed -i 's/^#ClientAliveInterval.*/ClientAliveInterval 10/g' /etc/ssh/sshd_config
+    sed -i 's/^#ClientAliveCountMax.*/ClientAliveCountMax 3/g' /etc/ssh/sshd_config
+    systemctl restart sshd
+    systemctl enable sshd
+}
+
+disable_firewall() {
+    case "$os_dist_name" in
+        centos)
+            systemctl stop firewalld 
+            systemctl disable firewalld 
+        ;;
+        ubuntu)
+            systemctl stop ufw -l
+            systemctl disable ufw -l 
+        ;;
+        *)
+            echo "default"
+        ;;
+    esac
+    
+}
+
+add_new_user() {
+    useradd $os_dist_name
+    mkdir /home/$os_dist_name/.ssh -p
+    echo "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCj3sFcfqI0ybPHSsdyFbV7+yKmWr562meCPqbisIUGy8qYDkrtjZ6e+uREAyww824HLTMhAp6qMzqekUqVelgUgtTJa/PH59ggsXVDuF3/h8pYvNMCtOo+RCHFcXLmvXUKmuUJ1xJx6qaFDH5IGA3uJakoyXQgZNCU3o6aXCKuZ3E8zATrmOJ7MMd5pyJRYSfwd3VdCL3p4MTf4zWXcJZc00i+SC34ME04qG8owqIoJ//UkMJZs7eHamV3gi+TwqU0pWH4kTNVrljncANcSnWKbsAcIkHPy4BfglzQJGJZQSeENQU5xD+MgPvxSBARhLvUsNwlz5wBpGLCk6yd2R8H" >> /home/$os_dist_name/.ssh/authorized_keys
+    chmod 755 /home/$os_dist_name/.ssh
+    chown $os_dist_name:$os_dist_name /home/$os_dist_name/.ssh
+    chown $os_dist_name:$os_dist_name /home/$os_dist_name/.ssh/authorized_keys
+    chmod 600 /home/$os_dist_name/.ssh/authorized_keys
+    echo "%$os_dist_name     ALL=(ALL)       NOPASSWD: ALL" >> /etc/sudoers
+}
+
+
+main() {
+    get_os_distribution
+    disable_firewall
+    verify_root_priv_for_new_user
+    secure_sshd
+    add_new_user
+}
+
+main
