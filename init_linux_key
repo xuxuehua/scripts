@@ -31,7 +31,6 @@ secure_sshd() {
     sed -i 's/^#ClientAliveInterval.*/ClientAliveInterval 10/g' /etc/ssh/sshd_config
     sed -i 's/^#ClientAliveCountMax.*/ClientAliveCountMax 3/g' /etc/ssh/sshd_config
     systemctl restart sshd
-    systemctl enable sshd
 }
 
 disable_firewall() {
