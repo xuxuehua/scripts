@@ -22,6 +22,7 @@ verify_root_priv_for_new_user() {
 }
 
 secure_sshd() {
+    sed -i 's/^Port.*/Port 54321/g' /etc/ssh/sshd_config
     sed -i 's/^#Port.*/Port 54321/g' /etc/ssh/sshd_config
     sed -i 's/^#PermitRootLogin.*/PermitRootLogin no/g' /etc/ssh/sshd_config
     sed -i 's/^#PubkeyAuthentication.*/PubkeyAuthentication yes/g' /etc/ssh/sshd_config
