@@ -76,7 +76,7 @@ main() {
     get_os_distribution
     disable_firewall
     verify_root_priv_for_new_user
-    disable_history
+    #disable_history
     secure_sshd
     add_new_user
     echo "Deploy user $os_dist_name successfully."
