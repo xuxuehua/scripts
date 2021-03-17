@@ -27,7 +27,7 @@ secure_sshd() {
     sed -i 's/^#PermitRootLogin.*/PermitRootLogin no/g' /etc/ssh/sshd_config
     sed -i 's/^#PubkeyAuthentication.*/PubkeyAuthentication yes/g' /etc/ssh/sshd_config
     sed -i 's/^#PermitEmptyPasswords.*/PermitEmptyPasswords no/g' /etc/ssh/sshd_config
-    sed -i 's/^#PermitEmptyPasswords.*/PermitEmptyPasswords no/g' /etc/ssh/sshd_config
+    sed -i 's/^#PasswordAuthentication.*/PasswordAuthentication no/g' /etc/ssh/sshd_config
     sed -i 's/^#TCPKeepAlive.*/TCPKeepAlive yes/g' /etc/ssh/sshd_config
     sed -i 's/^#ClientAliveInterval.*/ClientAliveInterval 10/g' /etc/ssh/sshd_config
     sed -i 's/^#ClientAliveCountMax.*/ClientAliveCountMax 3/g' /etc/ssh/sshd_config
